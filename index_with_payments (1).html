@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Aposta entre Amigos — Gestão completa</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#06b6d4;--muted:#94a3b8;color-scheme:dark}
+    *{box-sizing:border-box}
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial;margin:0;background:linear-gradient(180deg,#071026 0%,#071827 100%);color:#e6eef6;padding:16px}
+    .container{max-width:1000px;margin:12px auto;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);padding:18px;border-radius:12px;box-shadow:0 6px 30px rgba(2,6,23,0.6)}
+    h1{margin:0 0 8px;font-size:22px}
+    p.small{margin:6px 0 16px;color:var(--muted);font-size:13px}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .card{background:var(--card);padding:12px;border-radius:10px;flex:1;min-width:260px}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    input[type=text], input[type=number], select, textarea{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+    button{background:var(--accent);border:none;padding:8px 12px;border-radius:8px;color:#042027;font-weight:600;cursor:pointer}
+    .list{margin-top:8px}
+    table{width:100%;border-collapse:collapse;margin-top:8px}
+    th,td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.03);text-align:left}
+    footer{margin-top:12px;color:var(--muted);font-size:13px}
+    .danger{background:#ff6161;color:#4a0505}
+    .muted{color:var(--muted)}
+    .smallbtn{padding:6px 8px;font-size:13px}
+    details{margin-top:8px}
+    pre{background:rgba(255,255,255,0.02);padding:8px;border-radius:8px;overflow:auto}
+    .pix-input{display:flex;gap:8px;align-items:center}
+    .pix-input input{flex:1}
+    @media (max-width:800px){.row{flex-direction:column}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Aposta entre Amigos — Gestão completa (até 5 times)</h1>
+    <p class="small">Ferramenta para organizar apostas de futebol entre amigos (máx 5 times). <strong>Não processa pagamentos automaticamente</strong>. Você pode usar o recurso de instruções de pagamento para facilitar o acerto — mas as transferências devem ser feitas manualmente via Pix/transferência entre contas.</p>
+
+    <div class="row">
+      <div class="card">
+        <h3>1) Configurar evento</h3>
+        <label>Nome do evento</label>
+        <input id="eventName" placeholder="Ex: Pelada de Sexta" />
+        <label>Times (máx 5) — escreva nome e clique &quot;+&quot;</label>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input id="teamInput" placeholder="Nome do time" />
+          <button id="addTeamBtn">+</button>
+        </div>
+        <div id="teamsList" class="list muted">Nenhum time adicionado</div>
+        <hr />
+        <label>Modo de distribuição</label>
+        <select id="payoutMode">
+          <option value="pari">Pote dividido proporcionalmente entre vencedores (padrão)</option>
+          <option value="fixed">Paga valor fixo por aposta vencedora (define abaixo)</option>
+        </select>
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <input id="fixedPayout" type="number" placeholder="R$ por aposta vencedora" style="width:170px" />
+          <button id="saveEvent">Salvar evento</button>
+          <button id="resetAll" class="danger">Zerar tudo</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>2) Jogadores, apostas e PIX</h3>
+        <label>Nome do jogador</label>
+        <input id="playerName" placeholder="Ex: João" />
+        <label>Escolher time</label>
+        <select id="teamSelect"><option>Nenhum time</option></select>
+        <label>Valor da aposta (R$)</label>
+        <input id="betAmount" type="number" min="1" step="0.01" placeholder="Ex: 10" />
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <button id="placeBet">Registrar aposta</button>
+          <button id="exportCsv" class="smallbtn">Exportar CSV</button>
+        </div>
+
+        <hr />
+        <h4>Chaves PIX (opcional)</h4>
+        <p class="muted">Se cada jogador informar sua chave PIX, o app gera mensagens prontas para facilitar o pagamento manual.</p>
+        <div id="pixKeys" class="list muted">Nenhuma chave</div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <input id="pixPlayerName" placeholder="Nome do jogador (para associar chave)" />
+          <input id="pixKey" placeholder="Chave PIX (email, cpf, telefone ou aleatória)" />
+          <button id="addPixBtn" class="smallbtn">Salvar chave</button>
+        </div>
+
+        <div id="betsList" class="list muted">Nenhuma aposta</div>
+      </div>
+
+      <div class="card">
+        <h3>3) Resultado, distribuição e acerto</h3>
+        <label>Escolha o time vencedor (após o jogo)</label>
+        <select id="winnerSelect"><option>--</option></select>
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <button id="settleBtn">Finalizar & Calcular pagamentos</button>
+          <button id="summaryBtn" class="smallbtn">Gerar resumo de acertos</button>
+          <button id="genPixMsgs" class="smallbtn">Gerar mensagens Pix</button>
+          <button id="clearBets" class="danger">Limpar apostas</button>
+        </div>
+        <div id="settlement" class="list muted">Ainda não calculado</div>
+      </div>
+    </div>
+
+    <details>
+      <summary style="cursor:pointer;padding:8px;background:rgba(255,255,255,0.02);border-radius:8px">Instruções rápidas: abrir/hostear e README</summary>
+      <div style="margin-top:8px">
+        <h4>Como usar localmente (sem servidor)</h4>
+        <ol>
+          <li>Salve este arquivo como <code>index.html</code> no seu PC.</li>
+          <li>Abra-o com duplo-clique no navegador (Chrome/Edge/Firefox). Tudo roda localmente (armazenado no navegador).</li>
+        </ol>
+        <h4>Como publicar grátis (GitHub Pages)</h4>
+        <ol>
+          <li>Crie uma conta no <strong>github.com</strong> (se não tiver).</li>
+          <li>Crie um novo repositório público e envie este arquivo como <code>index.html</code>.</li>
+          <li>Vá em Settings → Pages → selecione a branch <code>main</code> e pasta <code>/ (root)</code>. Salve.</li>
+        </ol>
+        <h4>Exportar / Backup:</h4>
+        <ul>
+          <li>Use o botão <strong>Exportar CSV</strong> para baixar a lista de apostas.</li>
+          <li>O estado também é salvo no <code>localStorage</code> do navegador (apenas neste navegador/computador).</li>
+        </ul>
+      </div>
+    </details>
+
+    <footer>
+      <p><strong>Atenção legal:</strong> não posso ajudar a criar pagamentos automáticos para apostas com dinheiro real sem licenças. Esta ferramenta apenas gera instruções para pagamentos e ajuda a calcular saldos — as transferências devem ser feitas manualmente entre os participantes.</p>
+    </footer>
+  </div>
+
+<script>
+// App client-only (localStorage). Versão com instruções de pagamento (texto Pix) — NÃO automatiza transferências.
+const maxTeams = 5
+let state = { eventName:'', teams:[], bets:[], payoutMode:'pari', fixedPayout:0, pixKeys:{} }
+
+function saveState(){ localStorage.setItem('aposta_state_v3', JSON.stringify(state)) }
+function loadState(){ const s = localStorage.getItem('aposta_state_v3'); if(s) state=JSON.parse(s) }
+function renderTeams(){ const el = document.getElementById('teamsList'); if(state.teams.length===0){ el.textContent='Nenhum time adicionado'; return } el.innerHTML = '<ol>'+state.teams.map((t,i)=>`<li>${t} <button data-i="${i}" class="rm">rem</button></li>`).join('')+'</ol>'; document.querySelectorAll('.rm').forEach(b=>b.onclick=e=>{ const i= +e.target.dataset.i; state.teams.splice(i,1); updateAfterChange(); })
+  const teamSelect = document.getElementById('teamSelect'); const winnerSelect=document.getElementById('winnerSelect'); teamSelect.innerHTML=''; winnerSelect.innerHTML='<option>--</option>'
+  state.teams.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=t; teamSelect.appendChild(o); const w=document.createElement('option'); w.value=t; w.textContent=t; winnerSelect.appendChild(w) })
+}
+function renderPixKeys(){
+  const el = document.getElementById('pixKeys')
+  const keys = Object.keys(state.pixKeys)
+  if(keys.length===0){ el.textContent='Nenhuma chave'; return }
+  el.innerHTML = '<ul>'+keys.map(k=>`<li><strong>${k}</strong>: ${state.pixKeys[k]} <button data-player="${k}" class="rmPix">rem</button></li>`).join('')+'</ul>'
+  document.querySelectorAll('.rmPix').forEach(b=>b.onclick=e=>{ const p=e.target.dataset.player; delete state.pixKeys[p]; updateAfterChange(); })
+}
+function renderBets(){ const el = document.getElementById('betsList'); if(state.bets.length===0){ el.textContent='Nenhuma aposta'; return } el.innerHTML = '<table><thead><tr><th>Jogador</th><th>Time</th><th>Valor (R$)</th><th></th></tr></thead><tbody>'+state.bets.map(b=>`<tr data-id="${b.id}"><td>${b.player}</td><td>${b.team}</td><td>${b.amount.toFixed(2)}</td><td><button class="del">X</button></td></tr>`).join('')+'</tbody></table>'
+  document.querySelectorAll('.del').forEach((d,i)=>d.onclick=e=>{ const tr=e.target.closest('tr'); const id=tr.dataset.id; state.bets = state.bets.filter(b=>b.id!==id); updateAfterChange(); })
+}
+function updateAfterChange(){ saveState(); renderTeams(); renderBets(); renderPixKeys(); document.getElementById('eventName').value = state.eventName; document.getElementById('fixedPayout').value = state.fixedPayout || '' }
+
+loadState(); updateAfterChange(); document.getElementById('eventName').value = state.eventName
+
+// handlers
+document.getElementById('addTeamBtn').onclick = ()=>{
+  const v = document.getElementById('teamInput').value.trim(); if(!v) return alert('Digite o nome do time'); if(state.teams.length>=maxTeams) return alert('Máximo de 5 times'); state.teams.push(v); document.getElementById('teamInput').value=''; updateAfterChange(); }
+
+document.getElementById('saveEvent').onclick = ()=>{
+  state.eventName = document.getElementById('eventName').value.trim() || 'Evento sem nome'; state.payoutMode = document.getElementById('payoutMode').value; const fp = parseFloat(document.getElementById('fixedPayout').value); state.fixedPayout = isNaN(fp)?0:fp; saveState(); alert('Evento salvo: '+state.eventName)
+}
+
+document.getElementById('resetAll').onclick = ()=>{ if(!confirm('Zerar tudo (times, apostas, evento)?')) return; state={eventName:'',teams:[],bets:[],payoutMode:'pari',fixedPayout:0,pixKeys:{}}; updateAfterChange(); localStorage.removeItem('aposta_state_v3'); }
+
+document.getElementById('placeBet').onclick = ()=>{
+  const player = document.getElementById('playerName').value.trim(); const team = document.getElementById('teamSelect').value; const amount = parseFloat(document.getElementById('betAmount').value);
+  if(!player) return alert('Nome do jogador'); if(!team || team==='Nenhum time' || team==='--') return alert('Escolha um time'); if(isNaN(amount) || amount<=0) return alert('Valor inválido');
+  const id = Date.now().toString(36)+Math.random().toString(36).slice(2,6)
+  state.bets.push({id,player,team,amount}); document.getElementById('playerName').value=''; document.getElementById('betAmount').value=''; updateAfterChange(); }
+
+document.getElementById('clearBets').onclick = ()=>{ if(!confirm('Limpar todas as apostas?')) return; state.bets=[]; updateAfterChange(); }
+
+document.getElementById('addPixBtn').onclick = ()=>{
+  const player = document.getElementById('pixPlayerName').value.trim(); const key = document.getElementById('pixKey').value.trim();
+  if(!player || !key) return alert('Informe nome do jogador e chave PIX'); state.pixKeys[player]=key; document.getElementById('pixPlayerName').value=''; document.getElementById('pixKey').value=''; updateAfterChange();
+}
+
+// settlement logic
+function calculateSettlement(winner){
+  const totalPool = state.bets.reduce((s,b)=>s+b.amount,0)
+  if(state.payoutMode==='fixed'){
+    const winners = state.bets.filter(b=>b.team===winner)
+    const payouts = winners.map(w=>({player:w.player, stake:w.amount, payout: state.fixedPayout}))
+    return {totalPool,payouts,mode:'fixed'}
+  }
+  const winners = state.bets.filter(b=>b.team===winner)
+  if(winners.length===0) return {totalPool,payouts:[],message:'Nenhum apostador no time vencedor'}
+  const winnersTotal = winners.reduce((s,b)=>s+b.amount,0)
+  const payouts = winners.map(w=>({player:w.player, stake:w.amount, payout: (w.amount / winnersTotal) * totalPool}))
+  return {totalPool,payouts,mode:'pari'}
+}
+
+function computeNetBalances(payouts){
+  const map = {}
+  state.bets.forEach(b=>{ if(!map[b.player]) map[b.player]= {staked:0,received:0}; map[b.player].staked += b.amount })
+  payouts.forEach(p=>{ if(!map[p.player]) map[p.player]={staked:0,received:0}; map[p.player].received += p.payout })
+  const result = Object.keys(map).map(name=>({player:name, staked:map[name].staked, received:map[name].received, net: (map[name].received - map[name].staked)}))
+  return result
+}
+
+function makeSimplePayments(netBalances){
+  const debtors = netBalances.filter(x=>x.net< -0.004).map(x=>({player:x.player,amount:Math.abs(Number(x.net.toFixed(2)))})).sort((a,b)=>b.amount-a.amount)
+  const receivers = netBalances.filter(x=>x.net>0.004).map(x=>({player:x.player,amount:Math.abs(Number(x.net.toFixed(2)))})).sort((a,b)=>b.amount-b.amount)
+  const payments = []
+  let i=0,j=0
+  while(i<debtors.length && j<receivers.length){
+    const d = debtors[i], r = receivers[j]
+    const amt = Math.min(d.amount, r.amount)
+    payments.push({from:d.player,to:r.player,amount:amt})
+    d.amount = +(d.amount-amt).toFixed(2)
+    r.amount = +(r.amount-amt).toFixed(2)
+    if(d.amount<=0.004) i++
+    if(r.amount<=0.004) j++
+  }
+  return payments
+}
+
+document.getElementById('settleBtn').onclick = ()=>{
+  const winner = document.getElementById('winnerSelect').value; if(!winner || winner==='--') return alert('Escolha o time vencedor'); const res = calculateSettlement(winner);
+  const el = document.getElementById('settlement'); if(res.payouts.length===0){ el.innerHTML = '<div>'+ (res.message||'Sem payouts') +'</div>'; return }
+  let html = `<div><strong>Pool total:</strong> R$ ${res.totalPool.toFixed(2)}</div>`
+  html += '<table><thead><tr><th>Jogador</th><th>Aposta</th><th>Recebe (R$)</th></tr></thead><tbody>'
+  res.payouts.forEach(p=> html += `<tr><td>${p.player}</td><td>${p.stake.toFixed(2)}</td><td>${p.payout.toFixed(2)}</td></tr>`)
+  html += '</tbody></table>'
+  html += '<div class="muted" style="margin-top:8px">IMPORTANTE: pagamentos devem ser feitos fora desta ferramenta. Use o botão "Gerar resumo de acertos" para instruções de quem paga quem e "Gerar mensagens Pix" para mensagens prontas que facilitam transferência manual.</div>'
+  el.innerHTML = html
+}
+
+// summary button: compute net balances and pairs
+document.getElementById('summaryBtn').onclick = ()=>{
+  const winner = document.getElementById('winnerSelect').value; if(!winner || winner==='--') return alert('Escolha o time vencedor antes de gerar o resumo'); const res = calculateSettlement(winner); if(res.payouts.length===0) return alert('Sem vencedores ou payouts para calcular')
+  const nets = computeNetBalances(res.payouts)
+  let html = '<h4>Resumo de saldos (quem recebe/quem paga)</h4>'
+  html += '<table><thead><tr><th>Jogador</th><th>Apostou</th><th>Recebe</th><th>Saldo (R$)</th></tr></thead><tbody>'
+  nets.forEach(n=> html += `<tr><td>${n.player}</td><td>${n.staked.toFixed(2)}</td><td>${n.received.toFixed(2)}</td><td>${n.net.toFixed(2)}</td></tr>`)
+  html += '</tbody></table>'
+  const payments = makeSimplePayments(nets)
+  if(payments.length===0) html += '<div class="muted" style="margin-top:8px">Todos saldos zerados — ninguém precisa pagar.</div>'
+  else{
+    html += '<h4 style="margin-top:8px">Sugestão de pagamentos (quem paga para quem)</h4>'
+    html += '<table><thead><tr><th>De</th><th>Para</th><th>Valor (R$)</th></tr></thead><tbody>'
+    payments.forEach(p=> html += `<tr><td>${p.from}</td><td>${p.to}</td><td>${p.amount.toFixed(2)}</td></tr>`)
+    html += '</tbody></table>'
+    html += '<div class="muted" style="margin-top:8px">Use Pix ou transferência entre amigos. Esta é uma sugestão automática: confiram entre si antes de pagar.</div>'
+  }
+  document.getElementById('settlement').innerHTML = html
+}
+
+// Generate Pix messages (text only, for manual transfer)
+document.getElementById('genPixMsgs').onclick = ()=>{
+  const winner = document.getElementById('winnerSelect').value; if(!winner || winner==='--') return alert('Escolha o time vencedor antes de gerar mensagens'); const res = calculateSettlement(winner); if(res.payouts.length===0) return alert('Sem vencedores ou payouts para gerar mensagens')
+  const nets = computeNetBalances(res.payouts)
+  const payments = makeSimplePayments(nets)
+  if(payments.length===0) return alert('Não há pagamentos necessários.')
+  let html = '<h4>Mensagens Pix sugeridas (copie e cole na conversa)</h4>'
+  html += '<ul>'
+  payments.forEach(p=>{
+    const key = state.pixKeys[p.to] || '[chave PIX do recebedor não informada]'
+    const msg = `Pagar R$ ${p.amount.toFixed(2)} para ${p.to} — Chave PIX: ${key} — Descrição: Aposta ${state.eventName || ''}`.trim()
+    html += `<li><pre style="white-space:pre-wrap">${msg}</pre></li>`
+  })
+  html += '</ul>'
+  html += '<div class="muted">Estas são mensagens prontas para a conversa de grupo — NÃO são transferências automáticas. Confirem as chaves PIX antes de enviar qualquer pagamento.</div>'
+  document.getElementById('settlement').innerHTML = html
+}
+
+// export CSV
+function exportCSV(){ const rows = [['player','team','amount']]; state.bets.forEach(b=>rows.push([b.player,b.team,b.amount.toFixed(2)])); const csv = rows.map(r=>r.map(c=>`"${(''+c).replace(/"/g,'""')}"`).join(',')).join('
+'); const blob = new Blob([csv],{type:'text/csv'}); const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download = (state.eventName||'apostas')+'.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+}
+document.getElementById('exportCsv').onclick = exportCSV
+
+// helper: enable/disable selects
+setInterval(()=>{
+  const sel = document.getElementById('teamSelect'); sel.disabled = state.teams.length===0; const win = document.getElementById('winnerSelect'); win.disabled = state.teams.length===0
+},300)
+
+</script>
+</body>
+</html>
