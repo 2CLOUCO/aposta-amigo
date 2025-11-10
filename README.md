@@ -1,23 +1,3 @@
-[aposta_amigo_betano.html](https://github.com/user-attachments/files/23443916/aposta_amigo_betano.html)
-<!doctype html>
-<html lang="pt-BR">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Aposta Amigo — Aposte no Amigo</title>
-  <style>
-    :root{
-      --bg:#0b0b0b;
-      --panel:#121212;
-      --accent:#ff7a00;
-      --accent-2:#ff9b3b;
-      --muted:#bfbfbf;
-      --card:#1a1a1a;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:Inter,system-ui,Roboto,Arial;color:#fff;background:linear-gradient(180deg,var(--bg),#070707);-webkit-font-smoothing:antialiased}
-    .wrap{max-width:1100px;margin:24px auto;padding:20px}
-    header{display:flex;align-items:center;gap:20px;padding:18px;border-radius:10px;background:linear-gradient(90deg,rgba(255,255,255,0.02),transparent)}
     .logo{display:flex;align-items:center;gap:12px}
     .cup{width:54px;height:54px;background:linear-gradient(180deg,var(--accent),var(--accent-2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#141414}
     h1{margin:0;font-size:28px;letter-spacing:0.6px}
